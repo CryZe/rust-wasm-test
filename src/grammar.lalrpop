@@ -1,0 +1,34 @@
+use std::str::FromStr;
+
+grammar;
+
+pub Expr: f64 = {
+    <l:Expr> "+" <r:Factor> => l + r,
+    <l:Expr> "-" <r:Factor> => l - r,
+    Factor,
+};
+
+Factor: f64 = {
+    <l:Factor> "*" <r:Power> => l * r,
+    <l:Factor> "/" <r:Power> => l / r,
+    Power,
+};
+
+Power: f64 = {
+    <b:Power> "^" <e:Term> => b.powf(e),
+    Term,
+};
+
+Term: f64 = {
+    Num,
+    "(" <Expr> ")",
+    "sqrt(" <e:Expr> ")" => e.sqrt(),
+    "sin(" <e:Expr> ")" => e.sin(),
+    "cos(" <e:Expr> ")" => (f64::to_radians(90.0) - e).sin(), // Urgh, cos doesn't work?
+    "tan(" <e:Expr> ")" => e.tan(),
+    "hypot(" <a:Expr> "," <b:Expr> ")" => f64::hypot(a, b),
+};
+
+Num: f64 = {
+    r"((\d+(\.\d*)?)|(\.\d+))" => f64::from_str(<>).unwrap(),
+};

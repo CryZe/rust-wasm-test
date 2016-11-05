@@ -1,24 +1,20 @@
+#[macro_use]
 extern crate webplatform;
+extern crate libc;
 
-/// A simple integer calculator:
-/// `+` or `-` means add or subtract by 1
-/// `*` or `/` means multiply or divide by 2
-fn calculate(program: &str) -> u64 {
-    let mut accumulator = 0;
+mod grammar;
 
-    for token in program.chars() {
-        match token {
-            '+' => accumulator += 1,
-            '-' => accumulator -= 1,
-            '*' => accumulator *= 2,
-            '/' => accumulator /= 2,
-            _ => {
-                // ignore everything else
-            }
-        }
+use std::borrow::Cow;
+
+fn calculate(program: &str) -> Cow<'static, str> {
+    if program.is_empty() {
+        return "Type an expression".into();
     }
 
-    accumulator
+    match grammar::parse_Expr(program) {
+        Ok(v) => v.to_string().into(),
+        Err(e) => format!("Error: {:?}", e).into(),
+    }
 }
 
 fn main() {
@@ -26,19 +22,20 @@ fn main() {
     let body = document.element_query("body").unwrap();
     body.html_set(r#"
     <h1>Calculator</h1>
-    <input id="text" name="text"><br/>
-    <button>Calculate</button><br/>
-    <div />
+    <form>
+    <p><input id="text" name="text"></p>
+    </form>
+    <div>Type an expression</div>
     "#);
 
-    let button = document.element_query("button").unwrap();
     let input = document.element_query("input").unwrap();
     let div = document.element_query("div").unwrap();
 
-    button.on("click", move |_| {
+    input.on("input", move |_| {
+        let input = document.element_query("input").unwrap();
         let program = input.prop_get_str("value");
-        let value = calculate(&program);
-        div.html_set(&format!("Value is: {}", value));
+        let result = calculate(&program);
+        div.html_set(&result);
     });
 
     webplatform::spin();
