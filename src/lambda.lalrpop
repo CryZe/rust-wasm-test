@@ -1,0 +1,33 @@
+use ast::Token;
+use helpers;
+
+grammar;
+
+pub Expr: Token = {
+    r"[\\λ]" <v:StrLit> "." <e:Expr> => Token::Lambda(v, Box::new(e)),
+    Application,
+};
+
+Application: Token = {
+    <t1:Application> <t2:Term> => Token::Application(Box::new(t1), Box::new(t2)),
+    Term,
+};
+
+Term: Token = {
+    Lit,
+    "(" <Expr> ")",
+};
+
+Lit: Token = {
+    StrLit => Token::Variable(<>),
+    r"[0-9]+" => helpers::i(<>.parse().unwrap()),
+    "true" => helpers::b(true),
+    "false" => helpers::b(false),
+    "or" => helpers::or_(),
+    "and" => helpers::and_(),
+    "xor" => helpers::xor_(),
+};
+
+StrLit: String = {
+    r"[a-zA-Z]+[a-zA-Z0-9]*" => String::from(<>),
+};

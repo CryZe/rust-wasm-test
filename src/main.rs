@@ -3,16 +3,30 @@ extern crate webplatform;
 extern crate libc;
 
 mod grammar;
+mod lambda;
+mod ast;
+mod helpers;
 
 use std::borrow::Cow;
+
+// fn calculate(program: &str) -> Cow<'static, str> {
+//     if program.is_empty() {
+//         return "Type an expression".into();
+//     }
+
+//     match grammar::parse_Expr(program) {
+//         Ok(v) => v.to_string().into(),
+//         Err(e) => format!("Error: {:?}", e).into(),
+//     }
+// }
 
 fn calculate(program: &str) -> Cow<'static, str> {
     if program.is_empty() {
         return "Type an expression".into();
     }
 
-    match grammar::parse_Expr(program) {
-        Ok(v) => v.to_string().into(),
+    match lambda::parse_Expr(program) {
+        Ok(v) => v.evaluate().to_string().into(),
         Err(e) => format!("Error: {:?}", e).into(),
     }
 }
